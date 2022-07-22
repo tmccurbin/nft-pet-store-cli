@@ -19,6 +19,7 @@ contract Store {
   event OnSale(uint256 nftId, uint256 price, address seller);
 
   // TODO: Keep record to track if a token ID is for sale or not.
+  mapping(uint256 => bool) private tokenIdForSale;
 
   // TODO: Keep record to linking a token's ID to their buyers.
 
