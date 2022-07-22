@@ -15,7 +15,7 @@ NFT_ADDRESS=
 STORE_ADDRESS=
 ```
 
-You will need to put in your own MetaMask private key.  This project will only use the command line, and no one will have access to your private key, but delete the key after completing the project for security reasons.  You will obtain the contract addresses later on.
+You will need to put in your own Mainnet or EVM-compatible private key.  This project will only use the command line, and no one will have access to your private key, but delete the key after completing the project for security reasons.  You will obtain the contract addresses later on.
 
 Run `yarn` in the project root to install all the dependencies, including [hardhat](https://hardhat.org).
 
