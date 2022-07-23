@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-// TODO: Create a contract named "Paw" that inherits from ERC20 and Ownable.
+// DONE: Create a contract named "Paw" that inherits from ERC20 and Ownable.
 // See Pet.sol for syntax.
 
 contract Paw is ERC20("Paw", "PAW"), Ownable {
@@ -13,19 +13,19 @@ contract Paw is ERC20("Paw", "PAW"), Ownable {
 
   uint32 public TOTAL_TOKEN_SUPPLY = 1000000;
 
-  // TODO: Write the constructor for the PAW token and _mint() to msg.sender any number of tokens.
+  // DONE: Write the constructor for the PAW token and _mint() to msg.sender any number of tokens.
   constructor() {
     // Note that when the contract is deployed, msg.sender is the owner.
     _mint(msg.sender, TOTAL_TOKEN_SUPPLY);
   }
   
-  // TODO: Write a public function requestAirdrop() that calls airdropTo() 
+  // DONE: Write a public function requestAirdrop() that calls airdropTo() 
   // and transfer the air drop amount of tokens to the account connected to the contract.
   function requestAirdrop() public {
     airdropTo(msg.sender, airDropAmount);
   }
 
-  // TODO: Write a private function airdropTo() that takes in a recipient address and an amount 
+  // DONE: Write a private function airdropTo() that takes in a recipient address and an amount 
   // and _transfer() that amount of tokens from the contract owner (see owner()) to the recipient.
   function airdropTo(address recipientAddress, uint256 amount) private {
     _transfer(owner(), recipientAddress, amount);
