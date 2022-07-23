@@ -42,46 +42,53 @@ Type ".help" for more information.
 ```
 
 First, run the following line to load variables from process.env.
-```shell
-> const { TOKEN_ADDRESS, NFT_ADDRESS, STORE_ADDRESS } = process.env
+```js
+const { TOKEN_ADDRESS, NFT_ADDRESS, STORE_ADDRESS } = process.env
 ```
 
 ### PAW fungible token
 
 Start by initializing a PAW contract instance:
 
-```shell
-> let Paw = await ethers.getContractFactory("Paw")
-> let paw = await Paw.attach(TOKEN_ADDRESS)
+```js
+let Paw = await ethers.getContractFactory("Paw")
+```
+
+```js
+let paw = await Paw.attach(TOKEN_ADDRESS)
 ```
 
 Test that you can call the contract's methods from the console:
 
-```shell
-> await paw.name()
-'Paw'
+```js
+await paw.name() // 'Paw'
 ```
 
 Let's query the PAW token balance of the contract's owner account. Remember the printed address when you deployed the contracts? You can call this function to list all available accounts too:
 
-```shell
-> let accounts = await ethers.provider.listAccounts()
-> accounts
+```js
+let accounts = await ethers.provider.listAccounts()
+```
+```js
+accounts
 ```
 
 The first listed address is the signer's address or the same address who deployed the contracts.
 
 Now query the PAW token balance of the signing account, and see how many tokens there is (hopefully it isn't zero.). Integers are treated as a `BigNumber` in ethers.js, so you will have to call `toNumber()` on the result you get:
 
-```shell
-> let balance = await paw.balanceOf(accounts[0])
-> balance.toNumber()
+```js
+let balance = await paw.balanceOf(accounts[0])
+```
+
+```js
+balance.toNumber()
 ```
 
 Now, let's try to transfer some tokens to another address, say, the second address in `accounts`:
 
-```shell
-> let tx = await paw.transfer(accounts[1], 100)
+```js
+let tx = await paw.transfer(accounts[1], 100)
 ```
 
 Wait a few seconds for the transaction to go through, and try to query the signer's balance one more time. Hopefully, the account should now have 100 less PAW tokens.
@@ -93,18 +100,22 @@ The PAW `Contract` instance (instantiated as `paw` in the example) is implicitly
 To connect to another account, call `connect(signer)` on the `Contract` instance before calling `transfer`.
 This signer is created by taking one of the possible accounts and doing the following.
 
-```shell
-> let provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/")
-> let account1 = provider.getSigner(accounts[1])
-> await paw.connect(account1).transfer(accounts[2], 50)
+```js
+let provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545/")
+```
+```js
+let account1 = provider.getSigner(accounts[1])
+```
+```js
+await paw.connect(account1).transfer(accounts[2], 50)
 ```
 
 Query the balance of the second account and see if it only has half of the tokens.
 
 You can also request an airdrop, as follows:
 
-```shell
-> await paw.connect(account1).requestAirdrop()
+```js
+await paw.connect(account1).requestAirdrop()
 ```
 
 You can check the balances of accounts to verify that the airdrop of tokens based on the value of airDropAmount in Paw.sol occurred.
@@ -113,38 +124,42 @@ You can check the balances of accounts to verify that the airdrop of tokens base
 
 Start by initializing a PET contract instance:
 
-```shell
-> let Pet = await ethers.getContractFactory("Pet")
-> let pet = await Pet.attach(NFT_ADDRESS)
+```js
+let Pet = await ethers.getContractFactory("Pet")
+```
+```js
+let pet = await Pet.attach(NFT_ADDRESS)
 ```
 
 Let's try to mint the first ever PET token to the signer:
 
-```shell
-> await pet.mintTo(accounts[0], "/images/1.jpg")
+```js
+await pet.mintTo(accounts[0], "/images/1.jpg", 3)
 ```
 
 > Note: The file URI passed as a string to `mintTo` is meant to be a relative or absolute URI to a resource relevant to the mint. In this case, a local image file of a pet is being used for illustrative purposes. In practice, you would use a permanent URI on the internet as a tokenURI, like a URI to an AWS S3 resource or an IPFS URI to the image stored on IPFS/Filecoin network.
 
 Let's query the balance of the first account:
 
-```shell
-> (await pet.balanceOf(accounts[0])).toNumber()
+```js
+(await pet.balanceOf(accounts[0])).toNumber()
 ```
 
 Hopefully, the account only have 1 PET token at the moment.
 
 Now, let's transfer this minted PET to the second account:
 
-```shell
-> let currentTokenId = await pet.currentTokenId()
-> await pet.transferFrom(accounts[0], accounts[1], currentTokenId)
+```js
+let currentTokenId = await pet.currentTokenId()
+```
+```js
+await pet.transferFrom(accounts[0], accounts[1], currentTokenId)
 ```
 
 Now query the owner of the current PET token:
 
-```shell
-> await pet.ownerOf(currentTokenId)
+```js
+await pet.ownerOf(currentTokenId)
 ```
 
 Hopefully it should print out the address for accounts[1].
@@ -153,41 +168,59 @@ Hopefully it should print out the address for accounts[1].
 
 Now, we're ready to initialize the store contract.
 
-```shell
-> let Store = await ethers.getContractFactory("Store")
-> let store = await Store.attach(STORE_ADDRESS)
+```js
+let Store = await ethers.getContractFactory("Store")
+```
+```js
+let store = await Store.attach(STORE_ADDRESS)
 ```
 
 You can see that the current token, which belongs to accounts[1], is not for sale and has a price of 0.  This can change, though, by putting the NFT up for sale:
 
-```shell
-> await store.isOnSale(currentTokenId)
-> await store.tokenPrice(currentTokenId)
-> await store.connect(account1).nftSale(currentTokenId, 10)
+```js
+await store.isOnSale(currentTokenId)
+```
+```js
+await store.tokenPrice(currentTokenId)
+```
+```js
+await store.connect(account1).nftSale(currentTokenId, 10)
 ```
 
 Note that approve() takes the account connected to the contract and gives allowance to the chosen account, which is often required of various functions when transferring tokens.
 
-```shell
-> await paw.approve(accounts[0], 10000)
-> await paw.approve(accounts[1], 10000)
-> await paw.approve(STORE_ADDRESS, 10000)
-> await pet.connect(account1).approve(STORE_ADDRESS, currentTokenId)
+```js
+await paw.approve(accounts[0], 10000)
+```
+```js
+await paw.approve(accounts[1], 10000)
+```
+```js
+await paw.approve(STORE_ADDRESS, 10000)
+```
+```js
+await pet.connect(account1).approve(STORE_ADDRESS, currentTokenId)
 ```
 
 After these approvals, accounts[0] can now purchase the NFT from accounts[1] at the chosen price:
 
-```shell
-> await store.nftBuy(currentTokenId)
-> await pet.ownerOf(currentTokenId)
+```js
+await store.nftBuy(currentTokenId)
+```
+```js
+await pet.ownerOf(currentTokenId)
 ```
 
 You can also have the owner of the pet and paw contracts (accounts[0] by default) directly mint and purchase an NFT as well:
 
-```shell
-> await store.nftMintBuy(100, "/images/pet1.jpg")
-> let currentTokenId = await pet.currentTokenId()
-> await pet.ownerOf(currentTokenId)
+```js
+await store.nftMintBuy(100, "/images/pet1.jpg")
+```
+```js
+let currentTokenId = await pet.currentTokenId()
+```
+```js
+await pet.ownerOf(currentTokenId)
 ```
 
 ## Credits
