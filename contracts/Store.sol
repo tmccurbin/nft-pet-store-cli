@@ -18,10 +18,11 @@ contract Store {
   event Sold(uint256 nftId, uint256 price, address buyer);
   event OnSale(uint256 nftId, uint256 price, address seller);
 
-  // TODO: Keep record to track if a token ID is for sale or not.
+  // DONE: Keep record to track if a token ID is for sale or not.
   mapping(uint256 => bool) private tokenIdForSale;
 
-  // TODO: Keep record to linking a token's ID to their buyers.
+  // DONE: Keep record to linking a token's ID to their buyers.
+  mapping(uint256 => address) private tokenOwners;
 
   constructor(Paw pawaddr, Pet petaddr) {
     token = pawaddr;
@@ -36,59 +37,80 @@ contract Store {
     price = NFT.tokenPrice(tokenId);
   }
 
-  // TODO: Create the nftSale function.
+  // DONE: Create the nftSale function.
   function nftSale(uint256 _tokenId, uint256 price) external {
-    // TODO: Require that the person connected to the contract is the NFT owner.
+    // DONE: Require that the person connected to the contract is the NFT owner.
+    require(msg.sender == tokenOwners[_tokenId], "NFT sale requires that you be the owner of the token");
 
-    // TODO: Set a boolean in a record to indicate that the NFT is for sale.
+    // DONE: Set a boolean in a record to indicate that the NFT is for sale.
+    tokenIdForSale[_tokenId] = true;
 
-    // TODO: Set the NFT token price using a function in Pet.sol.
+    // DONE: Set the NFT token price using a function in Pet.sol.
+    NFT.setTokenPrice(_tokenId, price);
 
-    // TODO: Emit an onSale Event using the token ID, the price, and the address connected to the contract.
-    
+    // DONE: Emit an onSale Event using the token ID, the price, and the address connected to the contract.
+    emit OnSale(_tokenId, price, msg.sender);
   }
   
-  // TODO: Complete nftMintBuy.
+  // DONE: Complete nftMintBuy.
   function nftMintBuy(uint256 price, string memory tokenURI) external {
-    // TODO: Require that only the NFT contract owner can call this function.  Use NFT.owner().
+    // DONE: Require that only the NFT contract owner can call this function.  Use NFT.owner().
+    require(msg.sender == NFT.owner(), "Only the  NFT contract owner can call nftMintBuy");
 
-    // TODO: Use require to check for insufficient allowance compared to price.  See allowance() in ERC20.sol.
+    // DONE: Use require to check for insufficient allowance compared to price.  See allowance() in ERC20.sol.
     // Hint: allowance() asks how much money can a spender spend on behalf of an owner.
     // The "owner" is the person interacting with the contract, and the contract itself is the "spender".
+    require(token.allowance(msg.sender, address(this)) >= price, "The allowance for this contract is too low to purchase this token");
 
-    // TODO: Use require to check for insufficient balance compared to price.  See balanceOf() in ERC20.sol.
+    // DONE: Use require to check for insufficient balance compared to price.  See balanceOf() in ERC20.sol.
+    require(token.balanceOf(msg.sender) >= price, "Insufficient balance to purchase token");
 
-    // TODO: Mint a token to the buyer.
+    // DONE: Mint a token to the buyer.
+    NFT.mintTo(msg.sender, tokenURI, price);
 
-    // TODO: Set the price of the token.
+    // DONE: Set the price of the token.
+    uint256 tokenId = NFT.currentTokenId() + 1;
+    NFT.setTokenPrice(tokenId, price);
 
-    // TODO: Transfer that same number of tokens from the buyer to this contract's address.
+    // DONE: Transfer that same number of tokens from the buyer to this contract's address.
+    token.transferFrom(msg.sender, address(this), price);
 
-    // TODO: Set the new owner of the token to be the address connected to the contract.
+    // DONE: Set the new owner of the token to be the address connected to the contract.
+    tokenOwners[tokenId] = msg.sender;
     
-    // TODO: Set that the token is no longer for sale.
+    // DONE: Set that the token is no longer for sale.
+    tokenIdForSale[tokenId] = false;
 
-    // TODO: Emit a Sold Event using the token ID, price, and the buyer's address.
-    
+    // DONE: Emit a Sold Event using the token ID, price, and the buyer's address.
+    emit Sold(tokenId, price, msg.sender);
   }
 
-  // TODO: Complete nftBuy.
+  // DONE: Complete nftBuy.
   function nftBuy(uint256 tokenId) public {
-    // TODO: Require that the tokenId is on sale.
+    // DONE: Require that the tokenId is on sale.
+    require(tokenIdForSale[tokenId] == true, "NFT must be on sale to purchase");
 
-    // TODO: Get the token's current price.
+    // DONE: Get the token's current price.
+    uint256 tokenSalePrice = tokenPrice(tokenId);
 
-    // TODO: Use require to check for both insufficient allowance or insufficient balance.
+    // DONE: Use require to check for both insufficient allowance or insufficient balance.
+    require(token.allowance(msg.sender, address(this)) >= tokenSalePrice, "The allowance for this contract is too low to purchase this token");
+    require(token.balanceOf(msg.sender) >= tokenSalePrice, "Insufficient balance to purchase token");
 
-    // TODO: Transfer Paw tokens from msg.sender to the owner of the NFT based on the token's price.
+    // DONE: Transfer Paw tokens from msg.sender to the owner of the NFT based on the token's price.
     // See ownerOf() in ERC721.sol.
+    token.transferFrom(msg.sender, NFT.ownerOf(tokenId), tokenSalePrice);
 
-    // TODO: Transfer the NFT from its original owner to the buyer (i.e., msg.sender).
+    // DONE: Transfer the NFT from its original owner to the buyer (i.e., msg.sender).
+    NFT.transferFrom(NFT.ownerOf(tokenId), msg.sender, tokenId);
 
-    // TODO: Set the new owner of the token to be the address connected to the contract.
+    // DONE: Set the new owner of the token to be the address connected to the contract.
+    tokenOwners[tokenId] = msg.sender;
     
-    // TODO: Set that the token is no longer for sale.
+    // DONE: Set that the token is no longer for sale.
+    tokenIdForSale[tokenId] = false;
 
-    // TODO: Emit a Sold Event using the token ID, price, and the buyer's address.
+    // DONE: Emit a Sold Event using the token ID, price, and the buyer's address.
+    emit Sold(tokenId, tokenSalePrice, msg.sender);
   }
 }
